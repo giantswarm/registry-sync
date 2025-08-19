@@ -8,12 +8,109 @@ The main application is a Python CLI script that is configured to read repositor
 
 The docker image is available as `gsoci.azurecr.io/giantswarm/registry-sync` with tags according to the release versions, without `v` prefix.
 
-## ACR authentication
-
-The script assumes that the Azure CLI has been used to authenticate against the source registry (`az acr login` ).
-
 ## Usage
+
+The CLI provides two commands, `crawl` and `sync`. To run the `sync` command, you need the `tags.csv` file produced by `crawl`.
+
+### crawl
+
+The `crawl` command collects information on repositories and tags in the source registry and writes them to CSV files.
+
+For this command, the Azure CLI must be used before execution to authenticate against the source registry (`az acr login`).
+
+Example usage:
+
+```nohighlight
+python main.py crawl --registry-name gsoci --namespace giantswarm
+```
+
+Note that the `--registry-name` must be specified without the `.azurecr.io` suffix.
+
+As a result, the file `repositories.csv` and `tags.csv` will be created in the working directory. The working directory can be specified via the `--workdir` flag.
+
+For more options, see `python main.py crawl --help`.
+
+### sync
+
+The `sync` command reads `tags.csv` produced by the `crawl` command and applies `skopeo sync` to synchronize the images to the target registry.
+
+For authentication to both the source and the target registries, the following environment variables must be set:
+
+- `SOURCE_USERNAME`
+- `SOURCE_PASSWORD`
+- `TARGET_USERNAME`
+- `TARGET_PASSWORD`
+
+```nohighlight
+python main.py sync \
+    --source-registry-name gsoci \
+    --namespace giantswarm \
+    --target-registry-name docker.io \
+    --target-namespace giantswarm
+
+```
 
 ## Deployment
 
-To be deployed as a Kubernetes CronJob.
+To be deployed as a Kubernetes CronJob. Example:
+
+```yaml
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: registry-sync-gsoci
+spec:
+  schedule: "48 3 * * *" # daily at 03:48
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          initContainers:
+            - name: az-acr-login
+              image: mcr.microsoft.com/azure-cli:azurelinux3.0
+              imagePullPolicy: IfNotPresent
+              command:
+                - acr
+                - login
+                - --name=gsoci
+                - --username=$SOURCE_USERNAME
+                - --password=$SOURCE_PASSWORD
+            - name: crawl
+              image: gsoci.azurecr.io/giantswarm/registry-sync:latest
+              imagePullPolicy: IfNotPresent
+              command:
+                - crawl
+                - --registry-name=gsoci
+                - --namespace=giantswarm
+                - --workdir=/data
+              volumeMounts:
+                - name: data
+                  mountPath: /data
+            - name: sync
+              image: gsoci.azurecr.io/giantswarm/registry-sync:latest
+              imagePullPolicy: IfNotPresent
+              command:
+                - sync
+                - --source-registry-name=gsoci
+                - --namespace=giantswarm
+                - --target-registry-name=docker.io
+                - --target-namespace=giantswarm
+                - --workdir=/data
+              volumeMounts:
+                - name: data
+                  mountPath: /data
+          containers:
+            - name: job-done
+              image: busybox
+              command: ['sh', '-c', 'echo "job-1 and job-2 completed"']
+              imagePullPolicy: IfNotPresent
+          restartPolicy: Never
+          volumes:
+            - name: data
+              emptyDir: {}
+
+```
+
+## Development
+
+See `docs/`.
