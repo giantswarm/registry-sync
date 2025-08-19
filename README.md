@@ -1,3 +1,5 @@
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/giantswarm/registry-sync/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/giantswarm/registry-sync/tree/main)
+
 # registry-sync
 
 A synchronization utility to keep certain images in sync between multiple container registries. It assumes an Azure Container Registry (ACR) as source.
