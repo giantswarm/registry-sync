@@ -6,24 +6,14 @@ orbs:
 workflows:
   test:
     jobs:
-      - architect/go-build:
+      - architect/push-to-registries:
           context: architect
-          name: go-build
-          binary: template
+          name: push-to-registries
+          registries-data: public gsoci.azurecr.io ACR_GSOCI_USERNAME ACR_GSOCI_PASSWORD true
           filters:
             # Trigger job also on git tag.
             tags:
               only: /^v.*/
-      # - architect/push-to-registries:
-      #     context: architect
-      #     name: push-to-registries
-      #     requires:
-      #       - go-build
-      #     filters:
-      #       # Trigger job also on git tag.
-      #       tags:
-      #         only: /^v.*/
-      #       branches:
-      #         ignore:
-      #           - main
-      #           - master
+            branches:
+              ignore:
+                - main
