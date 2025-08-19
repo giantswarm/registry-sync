@@ -1,3 +1,12 @@
 # Developing on registry-sync
 
-This is a great place to explain how to get started developing on this project.
+Synopsis:
+
+```nohighlight
+python3 -m venv venv
+source venv/bin/activate
+pip install --upgrade pip
+pip install -r requirements.txt
+
+python main.py --help
+```
