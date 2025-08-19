@@ -1,27 +1,19 @@
-# General Go template repository
+# registry-sync
 
-This is a general template repository containing some basic files every GitHub repo owned by Giant Swarm should have.
+A synchronization utility to keep certain images in sync between multiple container registries. It assumes an Azure Container Registry (ACR) as source.
 
-Note also these more specific repositories:
+The main application is a Python CLI script that is configured to read repositories and tags from a source registry, then creates CSV files listing the images and tags to replicate, and then applies `skopeo sync` to do the actual synchronization.
 
-- [template-app](https://github.com/giantswarm/template-app)
-- [gitops-template](https://github.com/giantswarm/gitops-template)
-- [python-app-template](https://github.com/giantswarm/python-app-template)
+## Docker container
 
-## Creating a new repository
+The docker image is available as `gsoci.azurecr.io/giantswarm/registry-sync` with tags according to the release versions, without `v` prefix.
 
-Please do not use the `Use this template` function in the GitHub web UI.
+## ACR registration
 
-Check out the according [handbook article](https://handbook.giantswarm.io/docs/dev-and-releng/repository/go/) for better instructions.
+The script assumes that the Azure CLI has been used to authenticate against the source registry (`az acr login` ).
 
-### Some suggestions for your README
+## Usage
 
-After you have created your new repository, you may want to add some of these badges to the top of your README.
+## Deployment
 
-- **CircleCI:** After enabling builds for this repo via [this link](https://circleci.com/setup-project/gh/giantswarm/registry-sync), you can find badge code on [this page](https://app.circleci.com/settings/project/github/giantswarm/registry-sync/status-badges).
-
-- **Go reference:** use [this helper](https://pkg.go.dev/badge/) to create the markdown code.
-
-- **Go report card:** enter the module name on the [front page](https://goreportcard.com/) and hit "Generate report". Then use this markdown code for your badge: `[![Go report card](https://goreportcard.com/badge/github.com/giantswarm/registry-sync)](https://goreportcard.com/report/github.com/giantswarm/registry-sync)`
-
-- **Sourcegraph "used by N projects" badge**: for public Go repos only: `[![Sourcegraph](https://sourcegraph.com/github.com/giantswarm/registry-sync/-/badge.svg)](https://sourcegraph.com/github.com/giantswarm/registry-sync)`
+To be deployed as a Kubernetes CronJob.
