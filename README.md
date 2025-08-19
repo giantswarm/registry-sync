@@ -58,7 +58,7 @@ To be deployed as a Kubernetes CronJob. Example:
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: registry-sync-gsoci
+  name: registry-sync-gsoci-to-dockerio
 spec:
   schedule: "48 3 * * *" # daily at 03:48
   jobTemplate:
