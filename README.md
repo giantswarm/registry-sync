@@ -8,7 +8,7 @@ The main application is a Python CLI script that is configured to read repositor
 
 The docker image is available as `gsoci.azurecr.io/giantswarm/registry-sync` with tags according to the release versions, without `v` prefix.
 
-## ACR registration
+## ACR authentication
 
 The script assumes that the Azure CLI has been used to authenticate against the source registry (`az acr login` ).
 
