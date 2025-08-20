@@ -1,3 +1,4 @@
+from concurrent.futures import process
 import logging
 
 import click
@@ -8,8 +9,11 @@ import sys
 from datetime import datetime
 from datetime import UTC
 from datetime import timedelta
+import pexpect
 import yaml
-import subprocess
+import json
+from subprocess import Popen, PIPE
+
 
 from azure.identity import DefaultAzureCredential
 from azure.containerregistry import ContainerRegistryClient
@@ -33,6 +37,40 @@ def cli():
     pass
 
 
+def az_acr_login(registry_name, username, password):
+    """
+    This performs an interactive `az acr login` command with the --expose-token
+    flag. We choose this method as it doesn't rely on docker being available.
+
+    Returns username and accessToken in case of success.
+    """
+    command = f"az acr login --name={registry_name} --expose-token"
+    az_acr_login = pexpect.spawn(command)
+    i = az_acr_login.expect([pexpect.TIMEOUT, '[Uu]sername: ', '[Pp]assword: ', pexpect.EOF])
+    if i == 0: # timeout
+        logger.error("az acr login timed out")
+        sys.exit(1)
+    elif i == 1: # username
+        az_acr_login.sendline(username)
+    elif i == 2: # password
+        az_acr_login.sendline(password)
+    elif i == 3: # token
+        output = az_acr_login.before.decode('utf-8')
+        # get JSON part (snippet between { and })
+        json_part = re.search(r'\{.*\}', output, re.DOTALL)
+        if json_part:
+            json_output = json_part.group(0)
+            data = json.loads(json_output)
+            logger.info(f"Login successful. Token: {data['accessToken']}")
+            return data['username'], data['accessToken']
+        else:
+            logger.error("Failed to parse JSON from az acr login output")
+            sys.exit(1)
+
+    else:
+        logger.error("Unexpected output from az acr login")
+        sys.exit(1)
+
 @click.command()
 @click.option('--registry-name', help='Container registry name, either "gsoci" or "gsociprivate"')
 @click.option('--namespace', default=default_namespace, help='Repository namespace to crawl.')
@@ -47,6 +85,16 @@ def crawl(registry_name, namespace, repository, repository_regex, skip_private, 
     """
     Collect information on repositories and tags in the source registryin CSV files.
     """
+    source_username = os.getenv('SOURCE_USERNAME')
+    source_password = os.getenv('SOURCE_PASSWORD')
+
+    if source_username is None or source_username == '':
+        logger.error('SOURCE_USERNAME environment variable must be set.')
+        sys.exit(1)
+    if source_password is None or source_password == '':
+        logger.error('SOURCE_PASSWORD environment variable must be set.')
+        sys.exit(1)
+
     if repository != '' and repository_regex != '':
         logger.error('Only one of --repository or --repository-regex can be set.')
         sys.exit(1)
@@ -54,6 +102,8 @@ def crawl(registry_name, namespace, repository, repository_regex, skip_private, 
     if registry_name not in ('gsoci', 'gsociprivate'):
         logger.error('Invalid registry name. Please use either "gsoci" or "gsociprivate".')
         sys.exit(1)
+
+    username, token = az_acr_login(registry_name, source_username, source_password)
 
     registry_url = f"https://{registry_name}.azurecr.io"
 

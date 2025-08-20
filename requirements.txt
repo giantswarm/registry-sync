@@ -1,8 +1,6 @@
 azure-containerregistry==1.2.0
 azure-identity==1.24.0
 azure-mgmt-containerregistry==14.0.0
-certifi==2024.6.2
-charset-normalizer==3.3.2
 click==8.1.7
-idna==3.7
+pexpect==4.9.0
 PyYAML==6.0.1

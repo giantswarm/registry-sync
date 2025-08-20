@@ -69,9 +69,10 @@ spec:
         spec:
           initContainers:
             - name: az-acr-login
-              image: mcr.microsoft.com/azure-cli:azurelinux3.0
+              image: gsoci.azurecr.io/giantswarm/registry-sync:latest
               imagePullPolicy: IfNotPresent
               command:
+                - az
                 - acr
                 - login
                 - --name=gsoci
