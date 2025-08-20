@@ -9,11 +9,9 @@ import sys
 from datetime import datetime
 from datetime import UTC
 from datetime import timedelta
-import pexpect
+import requests
 import yaml
 import json
-from subprocess import Popen, PIPE
-
 
 from azure.identity import DefaultAzureCredential
 from azure.containerregistry import ContainerRegistryClient
@@ -37,39 +35,21 @@ def cli():
     pass
 
 
-def az_acr_login(registry_name, username, password):
-    """
-    This performs an interactive `az acr login` command with the --expose-token
-    flag. We choose this method as it doesn't rely on docker being available.
+def get_acr_refresh_token(acr_url, aad_access_token):
+    headers = {
+        'Content-Type': 'application/x-www-form-urlencoded',
+    }
 
-    Returns username and accessToken in case of success.
-    """
-    command = f"az acr login --name={registry_name} --expose-token"
-    az_acr_login = pexpect.spawn(command)
-    i = az_acr_login.expect([pexpect.TIMEOUT, '[Uu]sername: ', '[Pp]assword: ', pexpect.EOF])
-    if i == 0: # timeout
-        logger.error("az acr login timed out")
-        sys.exit(1)
-    elif i == 1: # username
-        az_acr_login.sendline(username)
-    elif i == 2: # password
-        az_acr_login.sendline(password)
-    elif i == 3: # token
-        output = az_acr_login.before.decode('utf-8')
-        # get JSON part (snippet between { and })
-        json_part = re.search(r'\{.*\}', output, re.DOTALL)
-        if json_part:
-            json_output = json_part.group(0)
-            data = json.loads(json_output)
-            logger.info(f"Login successful. Token: {data['accessToken']}")
-            return data['username'], data['accessToken']
-        else:
-            logger.error("Failed to parse JSON from az acr login output")
-            sys.exit(1)
+    data = {
+        'grant_type': 'access_token',
+        'service': acr_url,
+        'access_token': aad_access_token
+    }
 
-    else:
-        logger.error("Unexpected output from az acr login")
-        sys.exit(1)
+    response = requests.post(f'https://{acr_url}/oauth2/exchange', headers=headers, data=data)
+    acr_refresh_token = json.loads(response.content)
+    # pprint(response.__dict__)
+    return acr_refresh_token['refresh_token']
 
 @click.command()
 @click.option('--registry-name', help='Container registry name, either "gsoci" or "gsociprivate"')

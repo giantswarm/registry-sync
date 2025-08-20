@@ -10,3 +10,11 @@ pip install -r requirements.txt
 
 python main.py --help
 ```
+
+## ACR API
+
+```nohighlight
+export user=
+export password=
+credentials=$(echo -n "$user:$password" | base64 -w 0)
+curl -H "Authorization: Bearer $credentials" https://gsoci.azurecr.io/v2/_catalog

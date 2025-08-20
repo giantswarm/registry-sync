@@ -4,3 +4,4 @@ azure-mgmt-containerregistry==14.0.0
 click==8.1.7
 pexpect==4.9.0
 PyYAML==6.0.1
+requests==2.32.5
