@@ -17,3 +17,19 @@ workflows:
             branches:
               ignore:
                 - main
+      - architect/push-to-app-catalog:
+          name: push-to-app-catalog
+          context: architect
+          requires:
+            - push-to-registries
+          executor: app-build-suite
+          chart: registry-sync
+          app_catalog: giantswarm-operations-platform-catalog
+          app_catalog_test: giantswarm-operations-platform--test-catalog
+          persist_chart_archive: true
+          filters:
+            branches:
+              ignore:
+                - main
+            tags:
+              only: /^v.*/

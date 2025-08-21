@@ -1,0 +1,91 @@
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ .Values.name | quote }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    application.kubernetes.io/name: {{ .Values.name | quote }}
+    application.kubernetes.io/instance: {{ .Release.Name | quote }}
+spec:
+  concurrencyPolicy: Forbid
+  failedJobsHistoryLimit: 1
+  successfulJobsHistoryLimit: 3
+  schedule: {{ .Values.schedule | quote }}
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            application.kubernetes.io/name: {{ .Values.name | quote }}
+            application.kubernetes.io/instance: {{ .Release.Name | quote }}
+        spec:
+          initContainers:
+            - name: crawl
+              args:
+                - crawl
+                - --registry-name={{ .Values.registries.source.name }}
+                - --namespace={{ .Values.registries.source.namespace }}
+                - --workdir=/workdir
+              envFrom:
+                - secretRef:
+                    name: quay-replicator-common
+                - secretRef:
+                    name: quay-replicator-giantswarm-azurecr-io
+              image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+              imagePullPolicy: IfNotPresent
+              resources:
+                {{- toYaml .Values.resources | nindent 14 }}
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                  - ALL
+                runAsNonRoot: true
+                runAsUser: 1000
+                seccompProfile:
+                  type: RuntimeDefault
+              volumeMounts:
+                - mountPath: /workdir
+                  name: workdir
+          containers:
+            - name: sync
+              image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+              imagePullPolicy: IfNotPresent
+              args:
+                - sync
+                - --source-registry-name={{ .Values.registries.source.name }}
+                - --namespace={{ .Values.registries.source.namespace }}
+                - --target-registry-name={{ .Values.registries.target.name }}
+                - --target-namespace={{ .Values.registries.target.namespace }}
+                - --workdir=/workdir
+              envFrom:
+                - secretRef:
+                    name: quay-replicator-common
+                - secretRef:
+                    name: quay-replicator-giantswarm-azurecr-io
+              resources:
+                {{- toYaml .Values.resources | nindent 14 }}
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                    - ALL
+                runAsNonRoot: true
+                runAsUser: 1000
+                seccompProfile:
+                  type: RuntimeDefault
+              terminationMessagePath: /dev/termination-log
+              terminationMessagePolicy: File
+              volumeMounts:
+                - mountPath: /workdir
+                  name: workdir
+          dnsPolicy: ClusterFirst
+          restartPolicy: OnFailure
+          schedulerName: default-scheduler
+          securityContext: {}
+          terminationGracePeriodSeconds: 120
+          volumes:
+          - emptyDir:
+              sizeLimit: 50Mi
+            name: workdir

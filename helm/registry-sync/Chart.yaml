@@ -1,0 +1,7 @@
+apiVersion: v2
+name: registry-sync
+version: 1.0.0
+description: Synchronizes container images between registries
+home: https://github.com/giantswarm/registry-sync
+annotations:
+  application.giantswarm.io/team: honeybadger

@@ -1,0 +1,39 @@
+# -- Identifier of Kubernetes resources
+name: registry-sync
+
+# -- CronJob schedule. The default value "48 3 * * *" means daily at 03:48.
+schedule: 48 3 * * *
+
+# -- Configuration for the actual synchronization task
+registries:
+  # -- Specifies details regarding the source registry, repositories, and tags
+  source:
+    # -- Name of the Azure Container Registry (without domain azurecr.io)
+    name: gsoci
+    # -- Namespace prefix of the source repositories to look at
+    namespace: giantswarm
+    # -- Maximum age (in days) of tags to consider for synchronization
+    tagMaxAge: 365
+    # -- Regular expression to filter matching tags for synchronization
+    tagRegex: ".*"
+  target:
+    # -- Name of the target registry
+    name: docker.io
+    namespace: giantswarm
+
+image:
+  registry: gsoci.azurecr.io
+  repository: giantswarm/registry-sync
+  tag: "1.0.0"
+
+resources:
+  limits:
+    cpu: "500m"
+    memory: "512Mi"
+  requests:
+    cpu: "100m"
+    memory: "200Mi"
+
+monitoring:
+  podLogs:
+    tenant: giantswarm

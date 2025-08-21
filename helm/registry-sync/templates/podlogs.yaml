@@ -1,0 +1,23 @@
+apiVersion: monitoring.grafana.com/v1alpha2
+kind: PodLogs
+metadata:
+  namespace: {{ .Release.Namespace }}
+  name: {{ .Values.name }}
+  labels:
+    application.kubernetes.io/name: {{ .Values.name | quote }}
+    application.kubernetes.io/instance: {{ .Release.Name | quote }}
+spec:
+  selector:
+    matchLabels:
+      application.kubernetes.io/name: {{ .Values.name | quote }}
+      application.kubernetes.io/instance: {{ .Release.Name | quote }}
+  relabelings:
+  - action: replace
+    replacement: {{ .Values.monitoring.podLogs.tenant }}
+    targetLabel: giantswarm_observability_tenant
+  - action: replace
+    sourceLabels: [__meta_kubernetes_pod_node_name]
+    targetLabel: node_name
+  - action: replace
+    replacement: registry-sync
+    targetLabel: component
