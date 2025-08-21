@@ -4,13 +4,11 @@ metadata:
   namespace: {{ .Release.Namespace }}
   name: {{ .Values.name }}
   labels:
-    application.kubernetes.io/name: {{ .Values.name | quote }}
-    application.kubernetes.io/instance: {{ .Release.Name | quote }}
+    {{- include "labels.common" . | indent 4 }}
 spec:
   selector:
     matchLabels:
-      application.kubernetes.io/name: {{ .Values.name | quote }}
-      application.kubernetes.io/instance: {{ .Release.Name | quote }}
+      {{- include "labels.selector" . | indent 6 }}
   relabelings:
   - action: replace
     replacement: {{ .Values.monitoring.podLogs.tenant }}

@@ -5,8 +5,7 @@ metadata:
   name: {{ .Values.name | quote }}
   namespace: {{ .Release.Namespace | quote }}
   labels:
-    application.kubernetes.io/name: {{ .Values.name | quote }}
-    application.kubernetes.io/instance: {{ .Release.Name | quote }}
+    {{- include "labels.common" . | indent 4 }}
 spec:
   concurrencyPolicy: Forbid
   failedJobsHistoryLimit: 1
@@ -17,8 +16,7 @@ spec:
       template:
         metadata:
           labels:
-            application.kubernetes.io/name: {{ .Values.name | quote }}
-            application.kubernetes.io/instance: {{ .Release.Name | quote }}
+            {{- include "labels.common" . | indent 12 }}
         spec:
           initContainers:
             - name: crawl
