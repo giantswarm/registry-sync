@@ -68,16 +68,6 @@ spec:
       template:
         spec:
           initContainers:
-            - name: az-acr-login
-              image: gsoci.azurecr.io/giantswarm/registry-sync:latest
-              imagePullPolicy: IfNotPresent
-              command:
-                - az
-                - acr
-                - login
-                - --name=gsoci
-                - --username=$SOURCE_USERNAME
-                - --password=$SOURCE_PASSWORD
             - name: crawl
               image: gsoci.azurecr.io/giantswarm/registry-sync:latest
               imagePullPolicy: IfNotPresent
@@ -86,6 +76,17 @@ spec:
                 - --registry-name=gsoci
                 - --namespace=giantswarm
                 - --workdir=/data
+              env:
+                - name: SOURCE_USERNAME
+                  valueFrom:
+                    secretKeyRef:
+                      name: mysecret
+                      key: gsoci-username
+                - name: SOURCE_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: mysecret
+                      key: gsoci-password
               volumeMounts:
                 - name: data
                   mountPath: /data
@@ -99,19 +100,39 @@ spec:
                 - --target-registry-name=docker.io
                 - --target-namespace=giantswarm
                 - --workdir=/data
+              env:
+                - name: SOURCE_USERNAME
+                  valueFrom:
+                    secretKeyRef:
+                      name: mysecret
+                      key: gsoci-username
+                - name: SOURCE_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: mysecret
+                      key: gsoci-password
+                - name: TARGET_USERNAME
+                  valueFrom:
+                    secretKeyRef:
+                      name: mysecret
+                      key: docker-username
+                - name: TARGET_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: mysecret
+                      key: docker-password
               volumeMounts:
                 - name: data
                   mountPath: /data
           containers:
             - name: job-done
               image: busybox
-              command: ['sh', '-c', 'echo "job-1 and job-2 completed"']
+              command: ['sh', '-c', 'echo "completed"']
               imagePullPolicy: IfNotPresent
           restartPolicy: Never
           volumes:
             - name: data
               emptyDir: {}
-
 ```
 
 ## Development
