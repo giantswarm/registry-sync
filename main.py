@@ -1,7 +1,5 @@
-from concurrent.futures import process
 import logging
 import base64
-from urllib import response
 import click
 import csv
 import os
@@ -135,7 +133,7 @@ def get_acr_repositories(acr_name):
                 repositories.add(repo)
                 yield repo
                 params['last'] = repo
-        except:
+        except KeyError:
             pass
 
         if num_repositories == len(repositories):
@@ -158,11 +156,11 @@ def get_acr_tags(acr_name, repository):
 
         try:
             response.raise_for_status()
-        except:
-            print(response.request.url)
-            print(response.request.headers)
-            print(response.headers)
-            print(response.text)
+        except requests.RequestException:
+            logger.error(f"Error fetching tags for repository '{repository}': {response.request.url}")
+            logger.error(f"Request headers: {response.request.headers}")
+            logger.error(f"Response headers: {response.headers}")
+            logger.error(f"Response text: {response.text}")
             sys.exit(1)
         payload = response.json()
         tags = payload['tags']
@@ -232,7 +230,7 @@ def crawl(registry_name, namespace, repository, repository_regex, skip_private, 
                 continue
 
             repositories.append(r)
-            writer.writerow([namespace, repo_name])
+            writer.writerow([my_namespace, repo_name])
 
     logger.info(f'Found {len(repositories)} repositories.')
 
@@ -285,7 +283,7 @@ def crawl(registry_name, namespace, repository, repository_regex, skip_private, 
 
                     logger.info(f'Repository {r}: saving tag {name} for syncing')
                     all_tags.append(name)
-                    writer.writerow([namespace, repo_name, name, tag.get('createdTime'), tag.get('lastUpdateTime'), tag.get('digest')])
+                    writer.writerow([my_namespace, repo_name, name, tag.get('createdTime'), tag.get('lastUpdateTime'), tag.get('digest')])
             except Exception as e:
                 logger.error(f'Error processing tags for repository "{r}": {e}')
 
