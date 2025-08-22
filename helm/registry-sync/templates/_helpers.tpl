@@ -23,6 +23,7 @@ app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 application.giantswarm.io/team: {{ index .Chart.Annotations "application.giantswarm.io/team" | quote }}
 helm.sh/chart: {{ include "chart" . | quote }}
+observability.giantswarm.io/tenant: {{ .Values.monitoring.tenant | quote }}
 {{- end -}}
 
 {{/*

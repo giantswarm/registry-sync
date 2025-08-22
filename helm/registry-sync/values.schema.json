@@ -54,23 +54,14 @@
             "title": "monitoring",
             "description": "Monitoring configuration",
             "required": [
-                "podLogs"
+                "tenant"
             ],
             "properties": {
-                "podLogs": {
-                    "type": "object",
-                    "title": "podLogs",
-                    "required": [
-                        "tenant"
-                    ],
-                    "properties": {
-                        "tenant": {
-                            "type": "string",
-                            "title": "tenant",
-                            "default": "giantswarm",
-                            "required": []
-                        }
-                    }
+                "tenant": {
+                    "type": "string",
+                    "title": "tenant",
+                    "default": "giantswarm",
+                    "required": []
                 }
             }
         },
