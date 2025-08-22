@@ -82,6 +82,6 @@ spec:
           securityContext: {}
           terminationGracePeriodSeconds: 120
           volumes:
-          - emptyDir:
-              sizeLimit: 50Mi
-            name: workdir
+            - emptyDir:
+                sizeLimit: 50Mi
+              name: workdir
