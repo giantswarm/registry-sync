@@ -34,7 +34,7 @@ spec:
               image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}"
               imagePullPolicy: IfNotPresent
               resources:
-                {{- toYaml .Values.resources | nindent 14 }}
+                {{- toYaml .Values.resources | nindent 16 }}
               securityContext:
                 allowPrivilegeEscalation: false
                 capabilities:
@@ -63,7 +63,7 @@ spec:
                 - secretRef:
                     name: quay-replicator-giantswarm-azurecr-io
               resources:
-                {{- toYaml .Values.resources | nindent 14 }}
+                {{- toYaml .Values.resources | nindent 16 }}
               securityContext:
                 allowPrivilegeEscalation: false
                 capabilities:
