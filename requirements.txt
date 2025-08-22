@@ -1,4 +1,4 @@
-click==8.1.7
+click==8.2.1
 pexpect==4.9.0
 PyYAML==6.0.2
 requests==2.32.5
