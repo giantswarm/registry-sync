@@ -24,6 +24,8 @@ spec:
                 - crawl
                 - --registry-name={{ .Values.registries.source.name }}
                 - --namespace={{ .Values.registries.source.namespace }}
+                - --tag-max-age={{ .Values.registries.source.tagMaxAge }}
+                - --tag-regex={{ .Values.registries.source.tagRegex }}
                 - --workdir=/workdir
               envFrom:
                 - secretRef:
@@ -53,8 +55,7 @@ spec:
               args:
                 - sync
                 - --source-registry-name={{ .Values.registries.source.name }}
-                - --namespace={{ .Values.registries.source.namespace }}
-                - --target-registry-name={{ .Values.registries.target.name }}
+                - --target-registry={{ .Values.registries.target.domain }}
                 - --target-namespace={{ .Values.registries.target.namespace }}
                 - --workdir=/workdir
               envFrom:
