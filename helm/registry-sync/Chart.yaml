@@ -3,5 +3,6 @@ name: registry-sync
 version: 1.0.0
 description: Synchronizes container images between registries
 home: https://github.com/giantswarm/registry-sync
+icon: https://s.giantswarm.io/app-icons/giantswarm/1/light.svg
 annotations:
   application.giantswarm.io/team: honeybadger
