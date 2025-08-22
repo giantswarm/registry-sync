@@ -8,7 +8,7 @@ metadata:
 spec:
   concurrencyPolicy: Forbid
   failedJobsHistoryLimit: 1
-  successfulJobsHistoryLimit: 3
+  successfulJobsHistoryLimit: 1
   schedule: {{ .Values.schedule | quote }}
   jobTemplate:
     spec:
@@ -28,9 +28,7 @@ spec:
                 - --workdir=/workdir
               envFrom:
                 - secretRef:
-                    name: quay-replicator-common
-                - secretRef:
-                    name: quay-replicator-giantswarm-azurecr-io
+                    name: {{ .Values.name | quote }}
               image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}"
               imagePullPolicy: IfNotPresent
               resources:
@@ -60,9 +58,7 @@ spec:
                 - --workdir=/workdir
               envFrom:
                 - secretRef:
-                    name: quay-replicator-common
-                - secretRef:
-                    name: quay-replicator-giantswarm-azurecr-io
+                    name: {{ .Values.name | quote }}
               resources:
                 {{- toYaml .Values.resources | nindent 16 }}
               securityContext:
