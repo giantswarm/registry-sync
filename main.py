@@ -39,6 +39,10 @@ ACCESS_TOKENS = {
     scope_metadata: '',
 }
 
+# Configure logging
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
 # Configure HTTP retries
 session = requests.Session()
 retries = Retry(
@@ -51,14 +55,7 @@ session.mount('https://', HTTPAdapter(max_retries=retries))
 
 @click.group()
 def cli():
-    global logger
-    logger = logging.getLogger(__name__)
-    logger.setLevel(logging.INFO)
-    handler = logging.StreamHandler(sys.stdout)
-    handler.setLevel(logging.INFO)
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
+    pass
 
 
 def get_acr_access_token(acr_name, scope):
@@ -136,7 +133,7 @@ def get_acr_repositories(acr_name):
         except KeyError:
             pass
 
-        if num_repositories == len(repositories):
+        if not response.links.get('next'):
             has_more = False
 
 
@@ -211,7 +208,10 @@ def crawl(registry_name, namespace, repository, repository_regex, skip_private, 
 
     logger.info("Collecting repositories...")
 
-    with open(workdir+os.path.sep+'repositories.csv', 'w') as csvfile:
+    output_path = os.path.join(workdir, 'repositories.csv')
+    logging.info(f'Saving repositories to {output_path}')
+
+    with open(output_path, 'w') as csvfile:
         writer = csv.writer(csvfile, quoting=csv.QUOTE_MINIMAL)
         fieldnames = ['namespace', 'name']
         writer.writerow(fieldnames)
@@ -233,8 +233,15 @@ def crawl(registry_name, namespace, repository, repository_regex, skip_private, 
             writer.writerow([my_namespace, repo_name])
 
     logger.info(f'Found {len(repositories)} repositories.')
+    if len(repositories) == 0:
+        logger.error("No repositories found.")
+        sys.exit(1)
 
-    with open(workdir+os.path.sep+tags_path, 'w') as csvfile:
+    output_path = os.path.join(workdir, tags_path)
+    logging.info(f'Saving tags to {output_path}')
+
+    with open(output_path, 'w') as csvfile:
+        tag_count = 0
         writer = csv.writer(csvfile, quoting=csv.QUOTE_MINIMAL)
         fieldnames = ['namespace', 'repo_name', 'name', 'created_on', 'last_updated_on', 'digest']
         writer.writerow(fieldnames)
@@ -283,11 +290,14 @@ def crawl(registry_name, namespace, repository, repository_regex, skip_private, 
 
                     logger.info(f'Repository {r}: saving tag {name} for syncing')
                     all_tags.append(name)
+                    tag_count += 1
                     writer.writerow([my_namespace, repo_name, name, tag.get('createdTime'), tag.get('lastUpdateTime'), tag.get('digest')])
             except Exception as e:
                 logger.error(f'Error processing tags for repository "{r}": {e}')
 
             logger.info(f'Repository {r}: {len(all_tags)} tags')
+        
+        logger.info(f'Found {tag_count} tags in total.')
 
 
 @click.command()
@@ -358,7 +368,4 @@ cli.add_command(sync)
 
 
 if __name__ == '__main__':
-    try:
-        cli()
-    except BaseException as error:
-        logger.error(f'An exception occurred: {error}')
+    cli()
