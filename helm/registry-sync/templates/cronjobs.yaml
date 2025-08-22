@@ -1,0 +1,87 @@
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ .Values.name | quote }}
+  labels:
+    {{- include "labels.common" . | nindent 4 }}
+spec:
+  concurrencyPolicy: Forbid
+  failedJobsHistoryLimit: 1
+  successfulJobsHistoryLimit: 1
+  schedule: {{ .Values.schedule | quote }}
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            {{- include "labels.common" . | nindent 12 }}
+        spec:
+          initContainers:
+            - name: crawl
+              args:
+                - crawl
+                - --registry-name={{ .Values.registries.source.name }}
+                - --namespace={{ .Values.registries.source.namespace }}
+                - --tag-max-age={{ .Values.registries.source.tagMaxAge }}
+                - --tag-regex={{ .Values.registries.source.tagRegex }}
+                - --workdir=/workdir
+              envFrom:
+                - secretRef:
+                    name: {{ .Values.name | quote }}
+              image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+              imagePullPolicy: IfNotPresent
+              resources:
+                {{- toYaml .Values.resources | nindent 16 }}
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                  - ALL
+                readOnlyRootFilesystem: true
+                runAsNonRoot: true
+                runAsUser: 1000
+                seccompProfile:
+                  type: RuntimeDefault
+              volumeMounts:
+                - mountPath: /workdir
+                  name: workdir
+          containers:
+            - name: sync
+              image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+              imagePullPolicy: IfNotPresent
+              args:
+                - sync
+                - --source-registry-name={{ .Values.registries.source.name }}
+                - --target-registry={{ .Values.registries.target.domain }}
+                - --target-namespace={{ .Values.registries.target.namespace }}
+                - --workdir=/workdir
+              envFrom:
+                - secretRef:
+                    name: {{ .Values.name | quote }}
+              resources:
+                {{- toYaml .Values.resources | nindent 16 }}
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                    - ALL
+                readOnlyRootFilesystem: true
+                runAsNonRoot: true
+                runAsUser: 1000
+                seccompProfile:
+                  type: RuntimeDefault
+              terminationMessagePath: /dev/termination-log
+              terminationMessagePolicy: File
+              volumeMounts:
+                - mountPath: /workdir
+                  name: workdir
+          dnsPolicy: ClusterFirst
+          restartPolicy: OnFailure
+          schedulerName: default-scheduler
+          securityContext: {}
+          terminationGracePeriodSeconds: 120
+          volumes:
+            - emptyDir:
+                sizeLimit: 50Mi
+              name: workdir

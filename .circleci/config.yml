@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  architect: giantswarm/architect@6.4.0
+  architect: giantswarm/architect@dev:29ead256e4df1ea28a9434d9f77eb8420e26d538
 
 workflows:
   test:
@@ -17,3 +17,19 @@ workflows:
             branches:
               ignore:
                 - main
+      - architect/push-to-app-catalog:
+          name: push-to-app-catalog
+          context: architect
+          requires:
+            - push-to-registries
+          executor: app-build-suite
+          chart: registry-sync
+          app_catalog: giantswarm-operations-platform-catalog
+          app_catalog_test: giantswarm-operations-platform-test-catalog
+          persist_chart_archive: true
+          filters:
+            branches:
+              ignore:
+                - main
+            tags:
+              only: /^v.*/
