@@ -1,0 +1,215 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "required": [
+        "name",
+        "schedule",
+        "registries",
+        "image",
+        "resources",
+        "monitoring"
+    ],
+    "properties": {
+        "global": {
+            "type": "object",
+            "title": "global",
+            "description": "Global values are values that can be accessed from any chart or subchart by exactly the same name.",
+            "required": []
+        },
+        "image": {
+            "type": "object",
+            "title": "image",
+            "description": "Container image configuration",
+            "required": [
+                "registry",
+                "repository",
+                "tag"
+            ],
+            "properties": {
+                "registry": {
+                    "type": "string",
+                    "title": "registry",
+                    "description": "Registry to use for the container image",
+                    "default": "gsoci.azurecr.io",
+                    "required": []
+                },
+                "repository": {
+                    "type": "string",
+                    "title": "repository",
+                    "description": "Repository name with namespace prefix",
+                    "default": "giantswarm/registry-sync",
+                    "required": []
+                },
+                "tag": {
+                    "type": "string",
+                    "title": "tag",
+                    "description": "Tag to use for the container image",
+                    "default": "1.0.0",
+                    "required": []
+                }
+            }
+        },
+        "monitoring": {
+            "type": "object",
+            "title": "monitoring",
+            "description": "Monitoring configuration",
+            "required": [
+                "tenant"
+            ],
+            "properties": {
+                "tenant": {
+                    "type": "string",
+                    "title": "tenant",
+                    "default": "giantswarm",
+                    "required": []
+                }
+            }
+        },
+        "name": {
+            "type": "string",
+            "title": "name",
+            "description": "Identifier of Kubernetes resources",
+            "default": "registry-sync",
+            "required": []
+        },
+        "registries": {
+            "type": "object",
+            "title": "registries",
+            "description": "Configuration for the actual synchronization task",
+            "required": [
+                "source",
+                "target"
+            ],
+            "properties": {
+                "source": {
+                    "type": "object",
+                    "title": "source",
+                    "description": "Specifies details regarding the source registry, repositories, and tags",
+                    "required": [
+                        "name",
+                        "namespace",
+                        "tagMaxAge",
+                        "tagRegex"
+                    ],
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "title": "name",
+                            "description": "Name of the Azure Container Registry (without domain azurecr.io)",
+                            "default": "gsoci",
+                            "required": []
+                        },
+                        "namespace": {
+                            "type": "string",
+                            "title": "namespace",
+                            "description": "Namespace prefix of the source repositories to look at",
+                            "default": "giantswarm",
+                            "required": []
+                        },
+                        "tagMaxAge": {
+                            "type": "integer",
+                            "title": "tagMaxAge",
+                            "description": "Maximum age (in days) of tags to consider for synchronization",
+                            "default": 365,
+                            "required": []
+                        },
+                        "tagRegex": {
+                            "type": "string",
+                            "title": "tagRegex",
+                            "description": "Regular expression to filter matching tags for synchronization",
+                            "default": ".*",
+                            "required": []
+                        }
+                    }
+                },
+                "target": {
+                    "type": "object",
+                    "title": "target",
+                    "description": "Configuration for the target registry",
+                    "required": [
+                        "domain",
+                        "namespace"
+                    ],
+                    "properties": {
+                        "domain": {
+                            "type": "string",
+                            "title": "domain",
+                            "description": "Domain name or FQDN of the target registry",
+                            "default": "docker.io",
+                            "required": []
+                        },
+                        "namespace": {
+                            "type": "string",
+                            "title": "namespace",
+                            "description": "Namespace to use within the target registry",
+                            "default": "giantswarm",
+                            "required": []
+                        }
+                    }
+                }
+            }
+        },
+        "resources": {
+            "type": "object",
+            "title": "resources",
+            "description": "Resource requests and limits to be applied to all containers",
+            "required": [
+                "limits",
+                "requests"
+            ],
+            "properties": {
+                "limits": {
+                    "type": "object",
+                    "title": "limits",
+                    "required": [
+                        "cpu",
+                        "memory"
+                    ],
+                    "properties": {
+                        "cpu": {
+                            "type": "string",
+                            "title": "cpu",
+                            "default": "500m",
+                            "required": []
+                        },
+                        "memory": {
+                            "type": "string",
+                            "title": "memory",
+                            "default": "512Mi",
+                            "required": []
+                        }
+                    }
+                },
+                "requests": {
+                    "type": "object",
+                    "title": "requests",
+                    "required": [
+                        "cpu",
+                        "memory"
+                    ],
+                    "properties": {
+                        "cpu": {
+                            "type": "string",
+                            "title": "cpu",
+                            "default": "100m",
+                            "required": []
+                        },
+                        "memory": {
+                            "type": "string",
+                            "title": "memory",
+                            "default": "200Mi",
+                            "required": []
+                        }
+                    }
+                }
+            }
+        },
+        "schedule": {
+            "type": "string",
+            "title": "schedule",
+            "description": "CronJob schedule. The default value \"48 3 * * *\" means daily at 03:48.",
+            "default": "48 3 * * *",
+            "required": []
+        }
+    }
+}
