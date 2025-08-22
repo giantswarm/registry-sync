@@ -1,14 +1,13 @@
 apiVersion: monitoring.grafana.com/v1alpha2
 kind: PodLogs
 metadata:
-  namespace: {{ .Release.Namespace }}
   name: {{ .Values.name }}
   labels:
-    {{- include "labels.common" . | indent 4 }}
+    {{- include "labels.common" . | nindent 4 }}
 spec:
   selector:
     matchLabels:
-      {{- include "labels.selector" . | indent 6 }}
+      {{- include "labels.selector" . | nindent 6 }}
   relabelings:
   - action: replace
     replacement: {{ .Values.monitoring.podLogs.tenant }}

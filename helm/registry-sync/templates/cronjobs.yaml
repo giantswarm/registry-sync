@@ -3,9 +3,8 @@ apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: {{ .Values.name | quote }}
-  namespace: {{ .Release.Namespace | quote }}
   labels:
-    {{- include "labels.common" . | indent 4 }}
+    {{- include "labels.common" . | nindent 4 }}
 spec:
   concurrencyPolicy: Forbid
   failedJobsHistoryLimit: 1
@@ -16,7 +15,7 @@ spec:
       template:
         metadata:
           labels:
-            {{- include "labels.common" . | indent 12 }}
+            {{- include "labels.common" . | nindent 12 }}
         spec:
           initContainers:
             - name: crawl
