@@ -77,7 +77,7 @@ spec:
                 - mountPath: /workdir
                   name: workdir
           dnsPolicy: ClusterFirst
-          restartPolicy: OnFailure
+          restartPolicy: Never
           schedulerName: default-scheduler
           securityContext: {}
           terminationGracePeriodSeconds: 120
