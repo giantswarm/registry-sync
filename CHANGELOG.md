@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1] - 2025-08-25
+
 ### Changed
 
 - Set RestartPolicy to Never to avoid restarting a failed initContainer run
@@ -19,5 +21,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - First implementation
 
-[Unreleased]: https://github.com/giantswarm/registry-sync/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/giantswarm/registry-sync/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/giantswarm/registry-sync/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/giantswarm/registry-sync/releases/tag/v0.1.0

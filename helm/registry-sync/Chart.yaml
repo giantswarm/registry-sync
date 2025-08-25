@@ -1,6 +1,6 @@
 apiVersion: v2
 name: registry-sync
-version: 0.1.0
+version: 0.1.1
 description: Synchronizes container images between registries
 home: https://github.com/giantswarm/registry-sync
 icon: https://s.giantswarm.io/app-icons/giantswarm/1/light.svg
